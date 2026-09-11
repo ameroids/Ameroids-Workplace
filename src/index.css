@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --color-base-950: 255 255 255;
+    --color-base-900: 248 250 252;
+    --color-base-850: 241 245 249;
+    --color-base-800: 226 232 240;
+    --color-base-700: 203 213 225;
+    --color-base-600: 148 163 184;
+    --color-base-500: 100 116 139;
+    
+    --color-ink-100: 15 23 42;
+    --color-ink-200: 30 41 59;
+    --color-ink-300: 51 65 85;
+    --color-ink-400: 71 85 105;
+    --color-ink-500: 100 116 139;
+    --color-ink-600: 148 163 184;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --color-base-950: 7 7 12;
+    --color-base-900: 11 11 20;
+    --color-base-850: 16 16 32;
+    --color-base-800: 20 20 31;
+    --color-base-700: 28 28 43;
+    --color-base-600: 38 38 58;
+    --color-base-500: 52 52 74;
+
+    --color-ink-100: 244 243 248;
+    --color-ink-200: 227 226 237;
+    --color-ink-300: 199 198 214;
+    --color-ink-400: 156 154 179;
+    --color-ink-500: 122 120 145;
+    --color-ink-600: 92 90 114;
+  }
+}
+
+* {
+  border-color: theme('colors.base.700');
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-base-950 text-ink-100 antialiased;
+  font-feature-settings: 'ss01' on, 'cv01' on;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: theme('colors.base.600');
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.base.500');
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.focus-ring {
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-950;
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+  backdrop-filter: blur(14px);
+}
+
+.card {
+  @apply bg-base-900/70 glass border border-base-700/80 rounded-2xl shadow-sm dark:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)];
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
