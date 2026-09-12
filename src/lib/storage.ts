@@ -8,13 +8,13 @@ import { uid } from './format'
  */
 
 const KEYS = {
-  projects: 'ameorids.projects',
-  transactions: 'ameorids.transactions',
-  meetings: 'ameorids.meetings',
-  activity: 'ameorids.activity',
-  settings: 'ameorids.settings',
-  notifications: 'ameorids.notifications',
-  seeded: 'ameorids.seeded',
+  projects: 'Ameroids.projects',
+  transactions: 'Ameroids.transactions',
+  meetings: 'Ameroids.meetings',
+  activity: 'Ameroids.activity',
+  settings: 'Ameroids.settings',
+  notifications: 'Ameroids.notifications',
+  seeded: 'Ameroids.seeded',
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -32,7 +32,7 @@ function write<T>(key: string, value: T) {
 }
 
 export function ensureSeeded() {
-  if (read('ameorids.force_cleared_v1', false)) return
+  if (read('Ameroids.force_cleared_v1', false)) return
   write(KEYS.projects, [])
   write(KEYS.transactions, [])
   write(KEYS.meetings, [])
@@ -47,7 +47,7 @@ export function ensureSeeded() {
   })
   write<AppNotification[]>(KEYS.notifications, [])
   write(KEYS.seeded, true)
-  write('ameorids.force_cleared_v1', true)
+  write('Ameroids.force_cleared_v1', true)
 }
 
 // A tiny pub/sub so hooks in different components stay in sync when data
@@ -299,7 +299,7 @@ export const localDb = {
   // ---- Settings ----
   getSettings(): WorkspaceSettings {
     return read<WorkspaceSettings>(KEYS.settings, {
-      workspace_name: 'Ameorids',
+      workspace_name: 'Ameroids',
       currency: 'INR',
       theme: 'dark',
       notifications_enabled: true,

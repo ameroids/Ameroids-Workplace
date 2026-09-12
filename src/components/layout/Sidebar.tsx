@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutGrid, FolderKanban, Wallet, CalendarClock, Activity, Settings, ChevronsLeft, Circle, Moon, Sun } from 'lucide-react'
+import { LayoutGrid, FolderKanban, Wallet, CalendarClock, Activity, Settings, ChevronsLeft, LogOut } from 'lucide-react'
 import { initials } from '../../lib/format'
 import { backendMode } from '../../lib/db'
 
@@ -21,6 +21,10 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile }: SidebarProps) {
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token')
+    window.location.reload()
+  }
 
   const content = (
     <div className="flex flex-col h-full">
@@ -67,6 +71,17 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
           </NavLink>
         ))}
       </nav>
+
+      <div className="p-2.5 border-t border-base-700/80">
+        <button
+          onClick={handleLogout}
+          className={`group flex items-center gap-3 w-full px-2.5 py-2 rounded-lg text-sm transition-colors text-ink-400 hover:text-red-400 hover:bg-red-400/10 ${collapsed ? 'justify-center' : ''}`}
+          title={collapsed ? "Sign out" : undefined}
+        >
+          <LogOut size={17} strokeWidth={2} className="shrink-0 group-hover:-translate-x-0.5 transition-transform" />
+          {!collapsed && <span>Sign out</span>}
+        </button>
+      </div>
     </div>
   )
 

@@ -123,7 +123,7 @@ export default function MeetingFormDrawer({
     >
       <div className="flex flex-col gap-4">
         <Field label="Title">
-          <input className={inputClass} value={form.title} onChange={(e) => update({ title: e.target.value })} placeholder="e.g. Ameorids Weekly Sync" />
+          <input className={inputClass} value={form.title} onChange={(e) => update({ title: e.target.value })} placeholder="e.g. Ameroids Weekly Sync" />
         </Field>
 
         <div className="grid grid-cols-2 gap-4">

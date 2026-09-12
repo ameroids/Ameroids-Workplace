@@ -12,7 +12,7 @@ export default function Activity() {
     <div className="flex flex-col gap-6 max-w-2xl">
       <div>
         <h1 className="text-xl font-semibold text-ink-100">Activity</h1>
-        <p className="text-sm text-ink-500 mt-0.5">A live feed of everything happening across the Ameorids workspace.</p>
+        <p className="text-sm text-ink-500 mt-0.5">A live feed of everything happening across the Ameroids workspace.</p>
       </div>
 
       {loading ? (

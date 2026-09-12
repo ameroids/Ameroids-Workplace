@@ -31,9 +31,9 @@ export function buildSampleProjects(): Project[] {
   return [
     p(
       {
-        name: 'Ameorids Website',
+        name: 'Ameroids Website',
         client: 'Internal',
-        description: 'Public marketing site and brand presence for Ameorids, including case studies and the careers page.',
+        description: 'Public marketing site and brand presence for Ameroids, including case studies and the careers page.',
         status: 'In Progress',
         priority: 'High',
         progress: 72,
@@ -93,7 +93,7 @@ export function buildSampleProjects(): Project[] {
       {
         name: 'CRM System',
         client: 'Internal',
-        description: 'Lightweight CRM for tracking Ameorids leads, proposals and follow-ups.',
+        description: 'Lightweight CRM for tracking Ameroids leads, proposals and follow-ups.',
         status: 'Planning',
         priority: 'Low',
         progress: 5,
@@ -108,7 +108,7 @@ export function buildSampleProjects(): Project[] {
       {
         name: 'Portfolio Platform',
         client: 'Internal',
-        description: 'Template-driven portfolio builder Ameorids can offer to freelance clients.',
+        description: 'Template-driven portfolio builder Ameroids can offer to freelance clients.',
         status: 'On Hold',
         priority: 'Low',
         progress: 25,
@@ -166,9 +166,9 @@ export function buildSampleProjects(): Project[] {
     ),
     p(
       {
-        name: 'Ameorids Internal Tools',
+        name: 'Ameroids Internal Tools',
         client: 'Internal',
-        description: 'Small internal utilities and scripts used across Ameorids projects.',
+        description: 'Small internal utilities and scripts used across Ameroids projects.',
         status: 'Completed',
         priority: 'Low',
         progress: 100,
@@ -176,7 +176,7 @@ export function buildSampleProjects(): Project[] {
         due_date: daysAgo(60),
         assigned_to: 'Ammar',
       },
-      ['Ameorids Internal Tools marked as Completed.'],
+      ['Ameroids Internal Tools marked as Completed.'],
       [],
     ),
   ]
@@ -205,7 +205,7 @@ export function buildSampleTransactions(): Transaction[] {
     t('Received', 45000, 'CrochetMart milestone payment', 'Project milestone', 3),
     t('Received', 60000, 'Campus Connect advance', 'Advance', 12),
     t('Received', 30000, 'Saffron POS advance', 'Advance', 8),
-    t('Received', 25000, 'Ameorids Internal Tools final payment', 'Final payment', 40),
+    t('Received', 25000, 'Ameroids Internal Tools final payment', 'Final payment', 40),
     t('Received', 18000, 'InvoiceFlow booking advance', 'Advance', 1),
     t('Spent', 4200, 'Cloud & domain renewal', 'Hosting', 5),
     t('Spent', 1999, 'Design software subscription', 'Software', 15),
@@ -227,7 +227,7 @@ export function buildSampleMeetings(): Meeting[] {
 
   return [
     m({
-      title: 'Ameorids Weekly Sync',
+      title: 'Ameroids Weekly Sync',
       date: daysFromNow(2),
       time: '11:00',
       participants: ['Ammar', 'Team'],
@@ -280,7 +280,7 @@ export function buildSampleActivity(projects: Project[], transactions: Transacti
     { id: uid(), kind: 'project_progress', description: 'Campus Connect progress updated to 48%', created_at: isoAgo(40) },
     { id: uid(), kind: 'meeting_created', description: 'Weekly Sync meeting added', created_at: isoAgo(20) },
     { id: uid(), kind: 'transaction', description: 'Wajebat contribution of ₹10,000 recorded', created_at: isoAgo(72) },
-    { id: uid(), kind: 'project_update', description: 'Mobile navigation completed on Ameorids Website', created_at: isoAgo(30) },
+    { id: uid(), kind: 'project_update', description: 'Mobile navigation completed on Ameroids Website', created_at: isoAgo(30) },
     { id: uid(), kind: 'transaction', description: '₹60,000 received from Campus Connect (advance)', created_at: isoAgo(288) },
     { id: uid(), kind: 'meeting_updated', description: 'CrochetMart Handover notes updated', created_at: isoAgo(96) },
     { id: uid(), kind: 'project_created', description: 'InvoiceFlow added as a new project', created_at: isoAgo(24) },

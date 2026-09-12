@@ -105,7 +105,7 @@ export default function Settings() {
         <div className="flex items-center gap-2 text-sm font-medium text-ink-200">
           <Coins size={15} className="text-violet-400" /> Currency
         </div>
-        <p className="text-sm text-ink-400">All amounts across Ameroids Command Center are shown in Indian Rupees (₹ / INR).</p>
+        <p className="text-sm text-ink-400">All amounts across Ameroids Workspace are shown in Indian Rupees (₹ / INR).</p>
       </section>
 
       <section className="card p-5 flex flex-col gap-4">

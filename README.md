@@ -1,6 +1,6 @@
-# Ameorids — Command Center
+# Ameroids — Workspace
 
-A single internal dashboard for managing Ameorids' projects, accounts (finances), meetings and activity — built as a modern React + Supabase SaaS-style product, with a fully working LocalStorage demo mode so it runs with zero configuration.
+A single internal dashboard for managing Ameroids' projects, accounts (finances), meetings and activity — built as a modern React + Supabase SaaS-style product, with a fully working LocalStorage demo mode so it runs with zero configuration.
 
 ## Tech stack
 
@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Open the printed local URL (usually `http://localhost:5173`). The app boots straight into **Demo Mode**: all data (projects, transactions, meetings, activity) lives in your browser's LocalStorage and comes pre-seeded with realistic Ameorids sample data. Nothing to configure, nothing to sign up for.
+Open the printed local URL (usually `http://localhost:5173`). The app boots straight into **Demo Mode**: all data (projects, transactions, meetings, activity) lives in your browser's LocalStorage and comes pre-seeded with realistic Ameroids sample data. Nothing to configure, nothing to sign up for.
 
 You can reset the demo data at any time from **Settings → Data connection → Reset demo data**.
 
@@ -77,7 +77,7 @@ Every page and hook talks only to `lib/db.ts`, which is the single place that de
 
 - **Overview** — KPI cards (active/completed projects, money received, available balance, Wajebat, next meeting), a "needs attention" list, and a recent-activity feed.
 - **Projects** — filterable/searchable table (cards on mobile), a details drawer with an update timeline and notes, and a create/edit drawer.
-- **Accounts** — Ameorids' internal money tracker: Money Received, Money Spent, and **Wajebat** are tracked as distinct transaction types. Available balance is always computed as `Received − Spent − Wajebat`, never hard-coded.
+- **Accounts** — Ameroids' internal money tracker: Money Received, Money Spent, and **Wajebat** are tracked as distinct transaction types. Available balance is always computed as `Received − Spent − Wajebat`, never hard-coded.
 - **Meetings** — upcoming meetings are visually prioritized; a details drawer supports agenda, notes (editable after the fact), decisions, and action items.
 - **Activity** — a chronological, company-wide feed generated automatically whenever a project, transaction, or meeting changes.
 - **Global search** (`⌘K` / `Ctrl+K`) — searches projects, transactions, meetings, and project notes/updates at once.
