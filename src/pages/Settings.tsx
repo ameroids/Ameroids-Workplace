@@ -133,10 +133,10 @@ export default function Settings() {
           <Database size={15} className="text-violet-400" /> Data connection
         </div>
         <div className="flex items-center gap-2.5 text-sm">
-          {backendMode === 'appwrite' ? (
+          {backendMode === 'supabase' ? (
             <>
               <CheckCircle2 size={15} className="text-emerald-400" />
-              <span className="text-ink-300">Connected to Appwrite</span>
+              <span className="text-ink-300">Connected to Supabase</span>
             </>
           ) : (
             <>
@@ -146,8 +146,8 @@ export default function Settings() {
           )}
         </div>
         <p className="text-xs text-ink-500 leading-relaxed">
-          To connect Appwrite, set <code className="text-violet-300">VITE_APPWRITE_ENDPOINT</code>, <code className="text-violet-300">VITE_APPWRITE_PROJECT_ID</code>, and{' '}
-          <code className="text-violet-300">VITE_APPWRITE_DATABASE_ID</code> in your <code className="text-violet-300">.env</code> file and restart the dev server.
+          To connect Supabase, set <code className="text-violet-300">VITE_SUPABASE_URL</code> and{' '}
+          <code className="text-violet-300">VITE_SUPABASE_ANON_KEY</code> in your <code className="text-violet-300">.env</code> file and restart the dev server.
           See the README for full setup instructions.
         </p>
         {backendMode === 'local' && (

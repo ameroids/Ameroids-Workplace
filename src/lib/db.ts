@@ -1,99 +1,92 @@
-import { ID, Query } from 'appwrite'
-import { databases, config, isAppwriteConfigured } from '../appwrite/config'
-import { dbService } from '../appwrite/database'
-import { realtime } from '../appwrite/realtime'
+import { supabase, isSupabaseConfigured, dbService } from '../supabase/config'
 import { localDb, ensureSeeded, subscribeLocal } from './storage'
 import type { Project, Transaction, Meeting, ActivityLog, WorkspaceSettings, AppNotification, ProjectUpdate, ProjectNote } from '../types'
 
 /**
  * db.ts is the only module the hooks talk to. It exposes one async API and
- * internally decides, based on `isAppwriteConfigured`, whether to hit
- * Appwrite or the LocalStorage demo layer in `storage.ts`.
+ * internally decides, based on `isSupabaseConfigured`, whether to hit
+ * Supabase or the LocalStorage demo layer in `storage.ts`.
  */
 
-if (!isAppwriteConfigured) ensureSeeded()
+if (!isSupabaseConfigured) ensureSeeded()
 
-export const backendMode: 'appwrite' | 'local' = isAppwriteConfigured ? 'appwrite' : 'local'
+export const backendMode: 'supabase' | 'local' = isSupabaseConfigured ? 'supabase' : 'local'
 
 async function mapProjectRow(row: any): Promise<Project> {
   const [updatesRes, notesRes] = await Promise.all([
-    databases.listDocuments(config.databaseId, config.collections.projectUpdates, [
-      Query.equal('project_id', row.$id),
-      Query.orderDesc('$createdAt')
-    ]),
-    databases.listDocuments(config.databaseId, config.collections.projectNotes, [
-      Query.equal('project_id', row.$id),
-      Query.orderDesc('$createdAt')
-    ])
+    supabase.from('project_updates').select('*').eq('project_id', row.id).order('created_at', { ascending: false }),
+    supabase.from('project_notes').select('*').eq('project_id', row.id).order('created_at', { ascending: false })
   ])
   
   return { 
     ...dbService.mapDoc<any>(row), 
-    updates: updatesRes.documents.map(d => dbService.mapDoc<ProjectUpdate>(d)), 
-    notes: notesRes.documents.map(d => dbService.mapDoc<ProjectNote>(d)) 
+    updates: (updatesRes.data || []).map((d: any) => dbService.mapDoc<ProjectUpdate>(d)), 
+    notes: (notesRes.data || []).map((d: any) => dbService.mapDoc<ProjectNote>(d)) 
   } as Project
 }
 
 export const db = {
   async getProjects(): Promise<Project[]> {
-    if (!isAppwriteConfigured) return localDb.getProjects()
-    const response = await databases.listDocuments(config.databaseId, config.collections.projects, [
-      Query.orderDesc('$createdAt')
-    ])
-    return Promise.all(response.documents.map(mapProjectRow))
+    if (!isSupabaseConfigured) return localDb.getProjects()
+    const response = await supabase.from('projects').select('*').order('created_at', { ascending: false })
+    if (response.error) throw response.error
+    return Promise.all((response.data || []).map(mapProjectRow))
   },
 
   async createProject(input: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'updates' | 'notes'>): Promise<Project> {
-    if (!isAppwriteConfigured) return localDb.createProject(input)
-    const doc = await databases.createDocument(config.databaseId, config.collections.projects, ID.unique(), input)
-    const projectDoc = doc as any
-    await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+    if (!isSupabaseConfigured) return localDb.createProject(input)
+    const { data: doc, error } = await supabase.from('projects').insert(input).select().single()
+    if (error) throw error
+    
+    await supabase.from('activity_logs').insert({ 
       kind: 'project_created', 
-      description: `${projectDoc.name} added as a new project` 
+      description: `${doc.name} added as a new project` 
     })
     return { ...dbService.mapDoc<any>(doc), updates: [], notes: [] }
   },
 
   async updateProject(id: string, patch: Partial<Project>): Promise<Project> {
-    if (!isAppwriteConfigured) {
+    if (!isSupabaseConfigured) {
       const updated = localDb.updateProject(id, patch)
       if (!updated) throw new Error('Project not found')
       return updated
     }
     const { updates, notes, id: _id, created_at, updated_at, ...rest } = patch as any
-    const doc = await databases.updateDocument(config.databaseId, config.collections.projects, id, rest)
-    const projectDoc = doc as any
+    const { data: doc, error } = await supabase.from('projects').update(rest).eq('id', id).select().single()
+    if (error) throw error
     
     if (patch.status === 'Completed') {
-      await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+      await supabase.from('activity_logs').insert({ 
         kind: 'project_status', 
-        description: `${projectDoc.name} marked as Completed` 
+        description: `${doc.name} marked as Completed` 
       })
     } else if (typeof patch.progress === 'number') {
-      await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+      await supabase.from('activity_logs').insert({ 
         kind: 'project_progress', 
-        description: `${projectDoc.name} progress updated to ${patch.progress}%` 
+        description: `${doc.name} progress updated to ${patch.progress}%` 
       })
     }
     return mapProjectRow(doc)
   },
 
   async deleteProject(id: string): Promise<void> {
-    if (!isAppwriteConfigured) return localDb.deleteProject(id)
-    await databases.deleteDocument(config.databaseId, config.collections.projects, id)
+    if (!isSupabaseConfigured) return localDb.deleteProject(id)
+    await supabase.from('projects').delete().eq('id', id)
   },
 
   async addProjectUpdate(projectId: string, text: string, author = 'Ammar'): Promise<ProjectUpdate> {
-    if (!isAppwriteConfigured) {
+    if (!isSupabaseConfigured) {
       localDb.addProjectUpdate(projectId, text, author)
       return { id: crypto.randomUUID(), project_id: projectId, text, author, created_at: new Date().toISOString() }
     }
-    const doc = await databases.createDocument(config.databaseId, config.collections.projectUpdates, ID.unique(), { 
+    const { data: doc, error } = await supabase.from('project_updates').insert({ 
       project_id: projectId, 
       text, 
       author 
-    })
-    await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+    }).select().single()
+    if (error) throw error
+    
+    await supabase.from('activity_logs').insert({ 
       kind: 'project_update', 
       description: text 
     })
@@ -101,36 +94,39 @@ export const db = {
   },
 
   async addProjectNote(projectId: string, text: string): Promise<ProjectNote> {
-    if (!isAppwriteConfigured) {
+    if (!isSupabaseConfigured) {
       localDb.addProjectNote(projectId, text)
       return { id: crypto.randomUUID(), project_id: projectId, text, created_at: new Date().toISOString() }
     }
-    const doc = await databases.createDocument(config.databaseId, config.collections.projectNotes, ID.unique(), { 
+    const { data: doc, error } = await supabase.from('project_notes').insert({ 
       project_id: projectId, 
       text 
-    })
+    }).select().single()
+    if (error) throw error
+    
     return dbService.mapDoc<ProjectNote>(doc)
   },
 
   async getTransactions(): Promise<Transaction[]> {
-    if (!isAppwriteConfigured) return localDb.getTransactions()
-    const response = await databases.listDocuments(config.databaseId, config.collections.transactions, [
-      Query.orderDesc('date')
-    ])
-    return response.documents.map(d => dbService.mapDoc<Transaction>(d))
+    if (!isSupabaseConfigured) return localDb.getTransactions()
+    const { data, error } = await supabase.from('transactions').select('*').order('date', { ascending: false })
+    if (error) throw error
+    return (data || []).map((d: any) => dbService.mapDoc<Transaction>(d))
   },
 
   async createTransaction(input: Omit<Transaction, 'id' | 'created_at'>): Promise<Transaction> {
-    if (!isAppwriteConfigured) return localDb.createTransaction(input)
-    const doc = await databases.createDocument(config.databaseId, config.collections.transactions, ID.unique(), input)
-    await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+    if (!isSupabaseConfigured) return localDb.createTransaction(input)
+    const { data: doc, error } = await supabase.from('transactions').insert(input).select().single()
+    if (error) throw error
+    
+    await supabase.from('activity_logs').insert({ 
       kind: 'transaction', 
       description: `₹${input.amount.toLocaleString('en-IN')} ${input.type.toLowerCase()} — ${input.description}` 
     })
     
     if (input.type === 'Received') {
       const wajebatAmount = input.amount * 0.2
-      await databases.createDocument(config.databaseId, config.collections.transactions, ID.unique(), {
+      await supabase.from('transactions').insert({
         type: 'Wajebat',
         amount: wajebatAmount,
         description: `Auto-deducted 20% Wajebat from ${input.description}`,
@@ -138,7 +134,7 @@ export const db = {
         date: input.date,
         notes: ''
       })
-      await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+      await supabase.from('activity_logs').insert({ 
         kind: 'transaction', 
         description: `₹${wajebatAmount.toLocaleString('en-IN')} wajebat auto-deducted` 
       })
@@ -148,48 +144,47 @@ export const db = {
   },
 
   async updateTransaction(id: string, patch: Partial<Transaction>): Promise<Transaction> {
-    if (!isAppwriteConfigured) {
+    if (!isSupabaseConfigured) {
       const updated = localDb.updateTransaction(id, patch)
       if (!updated) throw new Error('Transaction not found')
       return updated
     }
     const { id: _id, created_at, ...rest } = patch as any
-    const doc = await databases.updateDocument(config.databaseId, config.collections.transactions, id, rest)
+    const { data: doc, error } = await supabase.from('transactions').update(rest).eq('id', id).select().single()
+    if (error) throw error
     return dbService.mapDoc<Transaction>(doc)
   },
 
   async deleteTransaction(id: string): Promise<void> {
-    if (!isAppwriteConfigured) return localDb.deleteTransaction(id)
+    if (!isSupabaseConfigured) return localDb.deleteTransaction(id)
     
-    const tx = await databases.getDocument(config.databaseId, config.collections.transactions, id)
+    const { data: tx } = await supabase.from('transactions').select('*').eq('id', id).single()
     
-    await databases.deleteDocument(config.databaseId, config.collections.transactions, id)
+    await supabase.from('transactions').delete().eq('id', id)
     
     if (tx?.description) {
-      // Find matching activity logs
-      const logs = await databases.listDocuments(config.databaseId, config.collections.activityLogs, [
-        Query.equal('kind', 'transaction'),
-        Query.search('description', tx.description)
-      ])
-      
-      for (const log of logs.documents) {
-        await databases.deleteDocument(config.databaseId, config.collections.activityLogs, log.$id)
+      const { data: logs } = await supabase.from('activity_logs').select('*').eq('kind', 'transaction').ilike('description', `%${tx.description}%`)
+      if (logs) {
+        for (const log of logs) {
+          await supabase.from('activity_logs').delete().eq('id', log.id)
+        }
       }
     }
   },
 
   async getMeetings(): Promise<Meeting[]> {
-    if (!isAppwriteConfigured) return localDb.getMeetings()
-    const response = await databases.listDocuments(config.databaseId, config.collections.meetings, [
-      Query.orderAsc('date')
-    ])
-    return response.documents.map(d => dbService.mapDoc<Meeting>(d))
+    if (!isSupabaseConfigured) return localDb.getMeetings()
+    const { data, error } = await supabase.from('meetings').select('*').order('date', { ascending: true })
+    if (error) throw error
+    return (data || []).map((d: any) => dbService.mapDoc<Meeting>(d))
   },
 
   async createMeeting(input: Omit<Meeting, 'id' | 'created_at' | 'updated_at'>): Promise<Meeting> {
-    if (!isAppwriteConfigured) return localDb.createMeeting(input)
-    const doc = await databases.createDocument(config.databaseId, config.collections.meetings, ID.unique(), input)
-    await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+    if (!isSupabaseConfigured) return localDb.createMeeting(input)
+    const { data: doc, error } = await supabase.from('meetings').insert(input).select().single()
+    if (error) throw error
+    
+    await supabase.from('activity_logs').insert({ 
       kind: 'meeting_created', 
       description: `${input.title} meeting added` 
     })
@@ -197,14 +192,16 @@ export const db = {
   },
 
   async updateMeeting(id: string, patch: Partial<Meeting>): Promise<Meeting> {
-    if (!isAppwriteConfigured) {
+    if (!isSupabaseConfigured) {
       const updated = localDb.updateMeeting(id, patch)
       if (!updated) throw new Error('Meeting not found')
       return updated
     }
     const { id: _id, created_at, updated_at, ...rest } = patch as any
-    const doc = await databases.updateDocument(config.databaseId, config.collections.meetings, id, rest)
-    await databases.createDocument(config.databaseId, config.collections.activityLogs, ID.unique(), { 
+    const { data: doc, error } = await supabase.from('meetings').update(rest).eq('id', id).select().single()
+    if (error) throw error
+    
+    await supabase.from('activity_logs').insert({ 
       kind: 'meeting_updated', 
       description: `${doc.title} was updated` 
     })
@@ -212,46 +209,39 @@ export const db = {
   },
 
   async deleteMeeting(id: string): Promise<void> {
-    if (!isAppwriteConfigured) return localDb.deleteMeeting(id)
-    await databases.deleteDocument(config.databaseId, config.collections.meetings, id)
+    if (!isSupabaseConfigured) return localDb.deleteMeeting(id)
+    await supabase.from('meetings').delete().eq('id', id)
   },
 
   async getActivity(): Promise<ActivityLog[]> {
-    if (!isAppwriteConfigured) return localDb.getActivity()
-    const response = await databases.listDocuments(config.databaseId, config.collections.activityLogs, [
-      Query.orderDesc('$createdAt'),
-      Query.limit(100)
-    ])
-    return response.documents.map(d => dbService.mapDoc<ActivityLog>(d))
+    if (!isSupabaseConfigured) return localDb.getActivity()
+    const { data, error } = await supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100)
+    if (error) throw error
+    return (data || []).map((d: any) => dbService.mapDoc<ActivityLog>(d))
   },
 
   async getNotifications(): Promise<AppNotification[]> {
-    if (!isAppwriteConfigured) {
+    if (!isSupabaseConfigured) {
       localDb.generateDeadlineNotifications()
       return localDb.getNotifications()
     }
-    // Similar to old Supabase impl, notifications could be populated server-side
     return []
   },
 
   async markNotificationRead(id: string): Promise<void> {
-    if (!isAppwriteConfigured) return localDb.markNotificationRead(id)
+    if (!isSupabaseConfigured) return localDb.markNotificationRead(id)
   },
 
   async markAllNotificationsRead(): Promise<void> {
-    if (!isAppwriteConfigured) return localDb.markAllNotificationsRead()
+    if (!isSupabaseConfigured) return localDb.markAllNotificationsRead()
   },
 
   async getSettings(): Promise<WorkspaceSettings> {
-    if (!isAppwriteConfigured) return localDb.getSettings()
+    if (!isSupabaseConfigured) return localDb.getSettings()
     
     try {
-      const response = await databases.listDocuments(config.databaseId, config.collections.profiles, [
-        Query.limit(1)
-      ])
-      
-      if (response.documents.length > 0) {
-        const data = response.documents[0]
+      const { data, error } = await supabase.from('profiles').select('*').limit(1).single()
+      if (!error && data) {
         return {
           workspace_name: data.workspace_name ?? 'Ameroids',
           currency: 'INR',
@@ -276,16 +266,14 @@ export const db = {
   },
 
   async updateSettings(patch: Partial<WorkspaceSettings>): Promise<WorkspaceSettings> {
-    if (!isAppwriteConfigured) return localDb.updateSettings(patch)
+    if (!isSupabaseConfigured) return localDb.updateSettings(patch)
     
-    let currentSettingsId = null;
+    let currentSettingsId = null
     
     try {
-      const response = await databases.listDocuments(config.databaseId, config.collections.profiles, [
-        Query.limit(1)
-      ])
-      if (response.documents.length > 0) {
-        currentSettingsId = response.documents[0].$id
+      const { data, error } = await supabase.from('profiles').select('id').limit(1).single()
+      if (!error && data) {
+        currentSettingsId = data.id
       }
     } catch {
       // Ignored
@@ -294,22 +282,37 @@ export const db = {
     const next: WorkspaceSettings = { workspace_name: 'Ameroids', currency: 'INR', theme: 'dark', notifications_enabled: true, time_zone: 'Asia/Kolkata', date_format: 'DD MMM YYYY', ...patch }
     
     if (currentSettingsId) {
-      await databases.updateDocument(config.databaseId, config.collections.profiles, currentSettingsId, patch)
+      await supabase.from('profiles').update(patch).eq('id', currentSettingsId)
     } else {
-      await databases.createDocument(config.databaseId, config.collections.profiles, ID.unique(), next)
+      await supabase.from('profiles').insert(next)
     }
     
     return next
   },
 
   resetDemoData(): void {
-    if (!isAppwriteConfigured) localDb.resetDemoData()
+    if (!isSupabaseConfigured) localDb.resetDemoData()
   },
 }
 
 export function subscribeToChanges(onChange: () => void): () => void {
-  if (!isAppwriteConfigured) {
+  if (!isSupabaseConfigured) {
     return subscribeLocal(onChange)
   }
-  return realtime.subscribeToChanges(onChange)
+  
+  const tables = ['projects', 'transactions', 'meetings', 'activity_logs']
+  
+  const channels = tables.map(table => 
+    supabase.channel(`public:${table}`).on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table },
+      () => onChange()
+    )
+  )
+
+  channels.forEach(channel => channel.subscribe())
+
+  return () => {
+    channels.forEach(channel => supabase.removeChannel(channel))
+  }
 }
