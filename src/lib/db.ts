@@ -302,17 +302,19 @@ export function subscribeToChanges(onChange: () => void): () => void {
   
   const tables = ['projects', 'transactions', 'meetings', 'activity_logs']
   
-  const channels = tables.map(table => 
-    supabase.channel(`public:${table}`).on(
+  const channel = supabase.channel(`db-changes-${crypto.randomUUID()}`)
+  
+  tables.forEach(table => {
+    channel.on(
       'postgres_changes',
       { event: '*', schema: 'public', table },
       () => onChange()
     )
-  )
+  })
 
-  channels.forEach(channel => channel.subscribe())
+  channel.subscribe()
 
   return () => {
-    channels.forEach(channel => supabase.removeChannel(channel))
+    supabase.removeChannel(channel)
   }
 }
