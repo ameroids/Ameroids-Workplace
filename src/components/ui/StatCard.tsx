@@ -17,14 +17,16 @@ const toneText: Record<NonNullable<StatCardProps['tone']>, string> = {
 
 export default function StatCard({ label, value, icon: Icon, hint, tone = 'default' }: StatCardProps) {
   return (
-    <div className="card p-6 flex flex-col gap-4 bg-base-900/40 backdrop-blur-sm border-base-700/50 hover:border-base-600/80 transition-all duration-300">
+    <div className="card p-6 flex flex-col gap-4 hover:-translate-y-1.5 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.6)] group">
       <div className="flex items-center justify-between">
         <span className="text-xs uppercase tracking-wider font-medium text-ink-500">{label}</span>
-        <Icon size={16} strokeWidth={1.5} className="text-ink-500/70" />
+        <div className="p-2 rounded-full bg-black/5 dark:bg-white/5 group-hover:scale-110 group-hover:bg-violet-500/10 group-hover:text-violet-500 transition-all duration-300">
+          <Icon size={16} strokeWidth={2} className="text-ink-500/70 group-hover:text-violet-500 transition-colors" />
+        </div>
       </div>
       <div>
         <div className={`text-4xl font-light tracking-tight tabular ${toneText[tone]}`}>{value}</div>
-        {hint && <div className="text-xs text-ink-500 mt-2 font-light">{hint}</div>}
+        {hint && <div className="text-xs text-ink-500 mt-2 font-light opacity-70">{hint}</div>}
       </div>
     </div>
   )

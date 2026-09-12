@@ -88,12 +88,20 @@ body {
 }
 
 .glass {
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
-  backdrop-filter: blur(14px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+.dark .glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
 }
 
 .card {
-  @apply bg-base-900/70 glass border border-base-700/80 rounded-2xl shadow-sm dark:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)];
+  @apply glass border border-black/5 dark:border-white/10 rounded-[1.5rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)];
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.05), inset 0 2px 4px rgba(255, 255, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.dark .card {
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.5), inset 0 2px 4px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .tabular {

@@ -28,7 +28,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
 
   const content = (
     <div className="flex flex-col h-full">
-      <div className={`flex items-center gap-2.5 px-4 h-16 border-b border-base-700/80 ${collapsed ? 'justify-center' : ''}`}>
+      <div className={`flex items-center gap-2.5 px-4 h-16 border-b border-black/5 dark:border-white/5 ${collapsed ? 'justify-center' : ''}`}>
         <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
           <img src="/logo.png" alt="Ameroids Logo" className="w-full h-full object-contain" />
         </div>
@@ -72,7 +72,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
         ))}
       </nav>
 
-      <div className="p-2.5 border-t border-base-700/80">
+      <div className="p-2.5 border-t border-black/5 dark:border-white/5">
         <button
           onClick={handleLogout}
           className={`group flex items-center gap-3 w-full px-2.5 py-2 rounded-lg text-sm transition-colors text-ink-400 hover:text-red-400 hover:bg-red-400/10 ${collapsed ? 'justify-center' : ''}`}
@@ -88,7 +88,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
   return (
     <>
       <aside
-        className={`hidden lg:flex flex-col shrink-0 bg-base-900 border-r border-base-700/80 h-screen sticky top-0 transition-all duration-300 ${
+        className={`hidden lg:flex flex-col shrink-0 bg-white/30 dark:bg-black/30 backdrop-blur-2xl border-r border-black/5 dark:border-white/5 shadow-[2px_0_15px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_15px_rgba(0,0,0,0.5)] h-full transition-all duration-300 relative z-20 ${
           collapsed ? 'w-[72px]' : 'w-[240px]'
         }`}
       >
@@ -97,8 +97,8 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
 
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-base-950/70 backdrop-blur-sm animate-fade-in" onClick={onCloseMobile} />
-          <aside className="relative w-[260px] h-full bg-base-900 border-r border-base-700/80 animate-slide-in-right" style={{ animationName: 'slide-up' }}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onCloseMobile} />
+          <aside className="relative w-[260px] h-full bg-white/70 dark:bg-[#0a0510]/80 backdrop-blur-3xl border-r border-black/10 dark:border-white/10 shadow-2xl animate-slide-in-right" style={{ animationName: 'slide-up' }}>
             {content}
           </aside>
         </div>

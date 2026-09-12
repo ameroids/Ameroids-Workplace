@@ -35,7 +35,7 @@ export default function Header({ onSearchOpen, onMobileMenu }: { onSearchOpen: (
   }, [isDark])
 
   return (
-    <header className="sticky top-0 z-20 h-16 flex items-center gap-3 px-4 sm:px-6 border-b border-base-700/80 bg-base-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-20 h-16 flex items-center gap-3 px-4 sm:px-6 border-b border-black/5 dark:border-white/5 bg-white/30 dark:bg-black/30 backdrop-blur-2xl shadow-[0_2px_15px_rgba(0,0,0,0.02)] dark:shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
       <button
         onClick={onMobileMenu}
         className="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center text-ink-400 hover:bg-base-800 transition-colors focus-ring"
