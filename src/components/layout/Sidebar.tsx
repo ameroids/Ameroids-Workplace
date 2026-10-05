@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutGrid, FolderKanban, Wallet, CalendarClock, Activity, Settings, ChevronsLeft, LogOut } from 'lucide-react'
+import { LayoutGrid, FolderKanban, Wallet, CalendarClock, Activity, Settings, ChevronsLeft, LogOut, CheckSquare } from 'lucide-react'
 import { initials } from '../../lib/format'
 import { backendMode } from '../../lib/db'
 
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/accounts', label: 'Accounts', icon: Wallet },
   { to: '/meetings', label: 'Meetings', icon: CalendarClock },
+  { to: '/tasks', label: 'Tasks', icon: CheckSquare },
   { to: '/activity', label: 'Activity', icon: Activity },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]

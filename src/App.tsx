@@ -7,6 +7,7 @@ import Accounts from './pages/Accounts'
 import Meetings from './pages/Meetings'
 import Activity from './pages/Activity'
 import Settings from './pages/Settings'
+import Tasks from './pages/Tasks'
 import Login from './pages/Login'
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/meetings" element={<Meetings />} />
+        <Route path="/tasks" element={<Tasks />} />
         <Route path="/activity" element={<Activity />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
