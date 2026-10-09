@@ -27,8 +27,9 @@ export function useTasks() {
     try {
       const task = await db.createTask({ title, completed: false })
       setTasks((prev) => [task, ...prev])
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create task', err)
+      alert('Error creating task: ' + (err.message || 'Unknown error'))
     }
   }
 
