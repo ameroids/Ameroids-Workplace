@@ -1,5 +1,5 @@
 import React from 'react'
-import { FolderPlus, RefreshCcw, TrendingUp, MessageSquare, Wallet, CalendarPlus, CalendarCheck } from 'lucide-react'
+import { FolderPlus, RefreshCcw, TrendingUp, MessageSquare, Wallet, CalendarPlus, CalendarCheck, CheckSquare, ListTodo } from 'lucide-react'
 import type { ActivityLog, ActivityKind } from '../../types'
 import { formatDateTime, timeAgo } from '../../lib/format'
 
@@ -11,6 +11,8 @@ const iconFor: Record<ActivityKind, React.ElementType> = {
   transaction: Wallet,
   meeting_created: CalendarPlus,
   meeting_updated: CalendarCheck,
+  task_created: ListTodo,
+  task_completed: CheckSquare,
 }
 
 const colorFor: Record<ActivityKind, string> = {
@@ -21,6 +23,8 @@ const colorFor: Record<ActivityKind, string> = {
   transaction: 'text-amber-400 bg-amber-500/10',
   meeting_created: 'text-violet-400 bg-violet-500/10',
   meeting_updated: 'text-violet-400 bg-violet-500/10',
+  task_created: 'text-blue-400 bg-blue-500/10',
+  task_completed: 'text-emerald-400 bg-emerald-500/10',
 }
 
 export default function ActivityTimeline({ activity, compact = false }: { activity: ActivityLog[]; compact?: boolean }) {
