@@ -247,3 +247,24 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- ----------------------------------------------------------------------------
+-- tasks
+-- ----------------------------------------------------------------------------
+create table if not exists public.tasks (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users (id) on delete cascade default auth.uid(),
+  title text not null,
+  completed boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists tasks_owner_idx on public.tasks (owner_id);
+create index if not exists tasks_created_idx on public.tasks (created_at desc);
+
+alter table public.tasks enable row level security;
+
+create policy "tasks_owner" on public.tasks
+  for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+
+-- alter publication supabase_realtime add table public.tasks;

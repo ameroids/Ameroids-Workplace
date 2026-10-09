@@ -71,6 +71,15 @@ export type ActivityKind =
   | 'transaction'
   | 'meeting_created'
   | 'meeting_updated'
+  | 'task_created'
+  | 'task_completed'
+
+export interface Task {
+  id: string
+  title: string
+  completed: boolean
+  created_at: string
+}
 
 export interface ActivityLog {
   id: string

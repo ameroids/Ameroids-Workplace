@@ -1,4 +1,4 @@
-import type { Project, Transaction, Meeting, ActivityLog, WorkspaceSettings, AppNotification } from '../types'
+import type { Project, Transaction, Meeting, ActivityLog, WorkspaceSettings, AppNotification, Task } from '../types'
 import { uid } from './format'
 
 /**
@@ -15,6 +15,7 @@ const KEYS = {
   settings: 'Ameroids.settings',
   notifications: 'Ameroids.notifications',
   seeded: 'Ameroids.seeded',
+  tasks: 'Ameroids.tasks',
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -36,6 +37,7 @@ export function ensureSeeded() {
   write(KEYS.projects, [])
   write(KEYS.transactions, [])
   write(KEYS.meetings, [])
+  write(KEYS.tasks, [])
   write(KEYS.activity, [])
   write<WorkspaceSettings>(KEYS.settings, {
     workspace_name: 'Ameroids',
@@ -239,6 +241,33 @@ export const localDb = {
   deleteMeeting(id: string) {
     const list = read<Meeting[]>(KEYS.meetings, [])
     write(KEYS.meetings, list.filter((m) => m.id !== id))
+    notify()
+  },
+
+  // ---- Tasks ----
+  getTasks(): Task[] {
+    return read<Task[]>(KEYS.tasks, [])
+  },
+  createTask(input: Omit<Task, 'id' | 'created_at'>): Task {
+    const list = read<Task[]>(KEYS.tasks, [])
+    const task: Task = { ...input, id: uid(), created_at: new Date().toISOString() }
+    write(KEYS.tasks, [task, ...list])
+    logActivity({ kind: 'task_created', description: `Task "${task.title}" added` })
+    notify()
+    return task
+  },
+  updateTask(id: string, patch: Partial<Task>): Task | undefined {
+    const list = read<Task[]>(KEYS.tasks, [])
+    let updated: Task | undefined
+    const next = list.map((t) => (t.id === id ? (updated = { ...t, ...patch }) : t))
+    write(KEYS.tasks, next)
+    if (updated && patch.completed) logActivity({ kind: 'task_completed', description: `Task "${updated.title}" completed` })
+    notify()
+    return updated
+  },
+  deleteTask(id: string) {
+    const list = read<Task[]>(KEYS.tasks, [])
+    write(KEYS.tasks, list.filter((t) => t.id !== id))
     notify()
   },
 

@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConfigured, dbService } from '../supabase/config'
 import { localDb, ensureSeeded, subscribeLocal } from './storage'
-import type { Project, Transaction, Meeting, ActivityLog, WorkspaceSettings, AppNotification, ProjectUpdate, ProjectNote } from '../types'
+import type { Project, Transaction, Meeting, ActivityLog, WorkspaceSettings, AppNotification, ProjectUpdate, ProjectNote, Task } from '../types'
 
 /**
  * db.ts is the only module the hooks talk to. It exposes one async API and
@@ -213,6 +213,49 @@ export const db = {
     await supabase.from('meetings').delete().eq('id', id)
   },
 
+  async getTasks(): Promise<Task[]> {
+    if (!isSupabaseConfigured) return localDb.getTasks()
+    const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
+    if (error) throw error
+    return (data || []).map((d: any) => dbService.mapDoc<Task>(d))
+  },
+
+  async createTask(input: Omit<Task, 'id' | 'created_at'>): Promise<Task> {
+    if (!isSupabaseConfigured) return localDb.createTask(input)
+    const { data: doc, error } = await supabase.from('tasks').insert(input).select().single()
+    if (error) throw error
+    
+    await supabase.from('activity_logs').insert({ 
+      kind: 'task_created', 
+      description: `Task "${input.title}" added` 
+    })
+    return dbService.mapDoc<Task>(doc)
+  },
+
+  async updateTask(id: string, patch: Partial<Task>): Promise<Task> {
+    if (!isSupabaseConfigured) {
+      const updated = localDb.updateTask(id, patch)
+      if (!updated) throw new Error('Task not found')
+      return updated
+    }
+    const { id: _id, created_at, ...rest } = patch as any
+    const { data: doc, error } = await supabase.from('tasks').update(rest).eq('id', id).select().single()
+    if (error) throw error
+    
+    if (patch.completed) {
+      await supabase.from('activity_logs').insert({ 
+        kind: 'task_completed', 
+        description: `Task "${doc.title}" completed` 
+      })
+    }
+    return dbService.mapDoc<Task>(doc)
+  },
+
+  async deleteTask(id: string): Promise<void> {
+    if (!isSupabaseConfigured) return localDb.deleteTask(id)
+    await supabase.from('tasks').delete().eq('id', id)
+  },
+
   async getActivity(): Promise<ActivityLog[]> {
     if (!isSupabaseConfigured) return localDb.getActivity()
     const { data, error } = await supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100)
@@ -300,7 +343,7 @@ export function subscribeToChanges(onChange: () => void): () => void {
     return subscribeLocal(onChange)
   }
   
-  const tables = ['projects', 'transactions', 'meetings', 'activity_logs']
+  const tables = ['projects', 'transactions', 'meetings', 'activity_logs', 'tasks']
   
   const channel = supabase.channel(`db-changes-${crypto.randomUUID()}`)
   
